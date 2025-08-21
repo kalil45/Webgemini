@@ -1,0 +1,125 @@
+/* src/App.css */
+
+/* Base styles for light theme (default Bootstrap) */
+body.light {
+  background-color: #f8f9fa; /* Light background */
+  color: #212529; /* Dark text */
+}
+
+/* Dark theme styles */
+body.dark {
+  background-color: #343a40; /* Dark background */
+  color: #f8f9fa; /* Light text */
+}
+
+body.dark .card {
+  background-color: #495057; /* Darker card background */
+  color: #f8f9fa;
+  border-color: #6c757d;
+}
+
+body.dark .card-header {
+  background-color: #5a6268; /* Even darker card header */
+  border-color: #6c757d;
+}
+
+body.dark .table {
+  color: #f8f9fa; /* Light text for table */
+}
+
+body.dark .table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(255, 255, 255, 0.05); /* Lighter stripe for dark theme */
+}
+
+body.dark .table-hover > tbody > tr:hover > * {
+  background-color: rgba(255, 255, 255, 0.1); /* Hover effect for dark theme */
+}
+
+body.dark .form-control {
+  background-color: #5a6268;
+  color: #f8f9fa;
+  border-color: #6c757d;
+}
+
+body.dark .form-control::placeholder {
+  color: #ced4da; /* Lighter placeholder text */
+}
+
+body.dark .form-control:focus {
+  background-color: #5a6268;
+  color: #f8f9fa;
+  border-color: #86b7fe; /* Focus border color */
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+body.dark .navbar {
+  background-color: #212529 !important; /* Darker navbar */
+  border-color: #495057;
+}
+
+body.dark .navbar-brand,
+body.dark .nav-link {
+  color: #f8f9fa !important; /* Light text for navbar items */
+}
+
+body.dark .list-group-item {
+  background-color: #495057;
+  color: #f8f9fa;
+  border-color: #6c757d;
+}
+
+body.dark .list-group-item-action:hover {
+  background-color: #5a6268;
+}
+
+/* Sidebar specific styles for dark theme */
+.sidebar.dark {
+  background-color: #212529 !important;
+  color: #f8f9fa;
+}
+
+.sidebar.dark .nav-link {
+  color: #f8f9fa !important;
+}
+
+.sidebar.dark .nav-link.active {
+  background-color: #0d6efd !important; /* Active link background */
+  color: #fff !important;
+}
+
+/* Adjust main content margin based on sidebar state */
+.ms-70px {
+  margin-left: 70px;
+}
+
+.ms-280px {
+  margin-left: 280px;
+}
+
+/* Transition for sidebar width */
+.d-flex > div:first-child {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Ensure text color for specific elements in dark mode */
+body.dark .text-dark {
+  color: #f8f9fa !important;
+}
+
+body.dark .text-white {
+  color: #f8f9fa !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .receipt-container, .receipt-container * {
+    visibility: visible;
+  }
+  .receipt-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
