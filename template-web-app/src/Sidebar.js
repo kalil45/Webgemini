@@ -1,40 +1,42 @@
 import React from 'react';
 
-function Sidebar({ isCollapsed, toggleSidebar, theme, toggleTheme, activeMenu, handleMenuClick }) {
+function Sidebar({ isCollapsed, toggleSidebar, isSidebarOpen, toggleMobileSidebar, theme, toggleTheme, activeMenu, handleMenuClick }) {
   return (
-    <div className={`d-flex flex-column flex-shrink-0 p-3 text-white ${theme === 'dark' ? 'bg-dark' : 'bg-light text-dark'} ${isCollapsed ? 'collapsed-sidebar' : ''}`} style={{ width: isCollapsed ? '70px' : '280px', height: '100vh' }}>
-      <a href="/" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span className="fs-4">{isCollapsed ? 'AP' : 'App Kasir Arch'}</span>
-      </a>
+    <>
+      <div className={`sidebar-backdrop ${isSidebarOpen ? 'show' : ''}`} onClick={toggleMobileSidebar}></div>
+      <div className={`d-flex flex-column flex-shrink-0 p-3 ${theme === 'dark' ? 'bg-dark text-white' : 'bg-light text-dark'} ${isCollapsed ? 'collapsed-sidebar' : ''} ${isSidebarOpen ? 'open' : ''}`}>
+        <a href="/" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none">
+          <span className="fs-4">{isCollapsed ? 'AP' : 'App Kasir Arch'}</span>
+        </a>
       <hr />
       <ul className="nav nav-pills flex-column mb-auto">
         <li className="nav-item">
-          <a href="#dashboard" className={`nav-link text-white ${activeMenu === 'Dashboard' ? 'active' : ''}`} aria-current="page" onClick={() => handleMenuClick('Dashboard')}>
+          <a href="#dashboard" className={`nav-link ${activeMenu === 'Dashboard' ? 'active' : ''}`} aria-current="page" onClick={() => handleMenuClick('Dashboard')}>
             🏠 {isCollapsed ? '' : 'Dashboard'}
           </a>
         </li>
         <li className="nav-item">
-          <a href="#laporan" className={`nav-link text-white ${activeMenu === 'Laporan' ? 'active' : ''}`} aria-current="page" onClick={() => handleMenuClick('Laporan')}>
+          <a href="#laporan" className={`nav-link ${activeMenu === 'Laporan' ? 'active' : ''}`} aria-current="page" onClick={() => handleMenuClick('Laporan')}>
             📊 {isCollapsed ? '' : 'Laporan'}
           </a>
         </li>
         <li>
-          <a href="#produk" className={`nav-link text-white ${activeMenu === 'Produk' ? 'active' : ''}`} onClick={() => handleMenuClick('Produk')}>
+          <a href="#produk" className={`nav-link ${activeMenu === 'Produk' ? 'active' : ''}`} onClick={() => handleMenuClick('Produk')}>
             📦 {isCollapsed ? '' : 'Produk'}
           </a>
         </li>
         <li>
-          <a href="#tambah-transaksi" className={`nav-link text-white ${activeMenu === 'Tambah Transaksi' ? 'active' : ''}`} onClick={() => handleMenuClick('Tambah Transaksi')}>
+          <a href="#tambah-transaksi" className={`nav-link ${activeMenu === 'Tambah Transaksi' ? 'active' : ''}`} onClick={() => handleMenuClick('Tambah Transaksi')}>
             🛒 {isCollapsed ? '' : 'Tambah Transaksi'}
           </a>
         </li>
         <li>
-          <a href="#pengeluaran" className={`nav-link text-white ${activeMenu === 'Pengeluaran' ? 'active' : ''}`} onClick={() => handleMenuClick('Pengeluaran')}>
+          <a href="#pengeluaran" className={`nav-link ${activeMenu === 'Pengeluaran' ? 'active' : ''}`} onClick={() => handleMenuClick('Pengeluaran')}>
             💸 {isCollapsed ? '' : 'Pengeluaran'}
           </a>
         </li>
         <li>
-          <a href="#modal" className={`nav-link text-white ${activeMenu === 'Modal' ? 'active' : ''}`} onClick={() => handleMenuClick('Modal')}>
+          <a href="#modal" className={`nav-link ${activeMenu === 'Modal' ? 'active' : ''}`} onClick={() => handleMenuClick('Modal')}>
             ➕ {isCollapsed ? '' : 'Modal'}
           </a>
         </li>
@@ -48,6 +50,7 @@ function Sidebar({ isCollapsed, toggleSidebar, theme, toggleTheme, activeMenu, h
         {isCollapsed ? '>' : '<'}
       </button>
     </div>
+    </>
   );
 }
 

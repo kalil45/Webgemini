@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './apiConfig';
 import AddProductForm from './AddProductForm';
 
 function ProductContent({ showToast }) {
@@ -12,7 +13,7 @@ function ProductContent({ showToast }) {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/products');
+      const response = await fetch(`${API_BASE_URL}/api/products`);
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -36,7 +37,7 @@ function ProductContent({ showToast }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/products/${productId}`,
+      const response = await fetch(`${API_BASE_URL}/api/products/${productId}`,
         {
           method: 'PUT',
           headers: {
@@ -63,7 +64,7 @@ function ProductContent({ showToast }) {
   const handleDelete = async (productId) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus produk ini? Ini tidak dapat dilakukan jika produk sudah memiliki riwayat transaksi.')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/products/${productId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
           method: 'DELETE',
         });
 
@@ -117,7 +118,7 @@ function ProductContent({ showToast }) {
                         product.stock
                       )}
                     </td>
-                    <td>Rp {product.costPrice ? product.costPrice.toLocaleString('id-ID') : 'N/A'}</td>
+                    <td>Rp {product.costprice !== null && product.costprice !== undefined ? parseFloat(product.costprice).toLocaleString('id-ID') : 'N/A'}</td>
                     <td>Rp {product.price ? product.price.toLocaleString('id-ID') : 'N/A'}</td>
                     <td>
                       {editingProductId === product.id ? (

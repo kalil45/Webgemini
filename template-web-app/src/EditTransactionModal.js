@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from './apiConfig';
 import Receipt from './Receipt'; // Import the receipt component
 
 // Helper functions for currency formatting
@@ -29,8 +30,8 @@ function EditTransactionModal({ show, onClose, onSave, transaction, showToast })
     if (transaction) {
       setFormData({
         quantity: transaction.quantity || '',
-        costPrice: transaction.costPrice || '',
-        sellingPrice: transaction.sellingPrice || '',
+        costPrice: transaction.costprice || '',
+        sellingPrice: transaction.sellingprice || '',
       });
     }
   }, [transaction]);
@@ -64,11 +65,11 @@ function EditTransactionModal({ show, onClose, onSave, transaction, showToast })
     try {
       const updatedData = {
         quantity: parseInt(formData.quantity, 10),
-        costPrice: parseFloat(formData.costPrice),
-        sellingPrice: parseFloat(formData.sellingPrice),
+        costprice: parseFloat(formData.costprice || 0),
+        sellingPrice: parseFloat(formData.sellingPrice || 0),
       };
 
-      const response = await fetch(`http://localhost:5000/api/transactions/${transaction.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/transactions/${transaction.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +121,7 @@ function EditTransactionModal({ show, onClose, onSave, transaction, showToast })
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label>Nama Produk</label>
-                  <input type="text" className="form-control" value={transaction?.productName || ''} disabled />
+                  <input type="text" className="form-control" value={transaction?.productname || ''} disabled />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="quantity" className="form-label">Jumlah</label>

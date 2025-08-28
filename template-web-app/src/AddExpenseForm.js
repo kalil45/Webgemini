@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from './apiConfig';
 
 function AddExpenseForm({ showToast, onExpenseAdded }) {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ function AddExpenseForm({ showToast, onExpenseAdded }) {
     if (validate()) {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/expenses', {
+        const response = await fetch(`${API_BASE_URL}/api/expenses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

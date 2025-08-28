@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './apiConfig';
 
 // Helper functions for currency formatting
 const formatRupiah = (number) => {
@@ -42,7 +43,7 @@ function EditExpenseModal({ show, onClose, onSave, expense, showToast }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:5000/api/expenses/${expense.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/expenses/${expense.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

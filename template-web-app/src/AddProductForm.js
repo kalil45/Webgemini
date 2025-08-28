@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { API_BASE_URL } from './apiConfig';
 
 function AddProductForm({ showToast, onProductAdded }) {
   const [formData, setFormData] = useState({
     name: '',
     stock: '',
     price: '',
-    costPrice: '',
+    costprice: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -21,7 +22,7 @@ function AddProductForm({ showToast, onProductAdded }) {
     if (!formData.name) tempErrors.name = true;
     if (!formData.stock) tempErrors.stock = true;
     if (!formData.price) tempErrors.price = true;
-    if (!formData.costPrice) tempErrors.costPrice = true;
+    if (!formData.costprice) tempErrors.costprice = true;
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -31,12 +32,17 @@ function AddProductForm({ showToast, onProductAdded }) {
     if (validate()) {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:5000/api/products', {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify({
+            name: formData.name,
+            stock: parseFloat(formData.stock) || 0,
+            price: parseFloat(formData.price) || 0,
+            costprice: parseFloat(formData.costprice) || 0,
+          }),
         });
 
         if (response.ok) {
@@ -45,7 +51,7 @@ function AddProductForm({ showToast, onProductAdded }) {
             name: '',
             stock: '',
             price: '',
-            costPrice: '',
+            costprice: '',
           });
           setErrors({});
           if (onProductAdded) {
@@ -117,12 +123,12 @@ function AddProductForm({ showToast, onProductAdded }) {
               type="number"
               className={`form-control ${errors.costPrice ? 'is-invalid' : ''}`}
               id="costPrice"
-              name="costPrice"
-              value={formData.costPrice}
+              name="costprice"
+              value={formData.costprice}
               onChange={handleChange}
               disabled={loading}
             />
-            {errors.costPrice && <div className="invalid-feedback">Harga Modal tidak boleh kosong.</div>}
+            {errors.costprice && <div className="invalid-feedback">Harga Modal tidak boleh kosong.</div>}
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? (

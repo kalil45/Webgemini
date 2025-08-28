@@ -12,6 +12,7 @@ import CapitalContent from './CapitalContent';
 import AddTransactionContent from './AddTransactionContent';
 import { saveAs } from 'file-saver';
 import './App.css'; // Import App.css
+import { API_BASE_URL } from './apiConfig';
 
 function App() {
   const [theme, setTheme] = useState(() => {
@@ -24,6 +25,7 @@ function App() {
     type: 'success',
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState('Dashboard'); // New state for active menu
   const [refreshKey, setRefreshKey] = useState(0); // Key to force refresh components
 
@@ -38,6 +40,10 @@ function App() {
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed((prevState) => !prevState);
+  };
+
+  const toggleMobileSidebar = () => {
+    setIsSidebarOpen((prevState) => !prevState);
   };
 
   const showToast = (message, type) => {
@@ -65,7 +71,7 @@ function App() {
 
   const handleExportReport = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/transactions');
+      const response = await fetch(`${API_BASE_URL}/api/transactions`);
       if (response.ok) {
         const transactions = await response.json();
         if (transactions.length === 0) {
@@ -109,6 +115,8 @@ function App() {
       <Sidebar
         isCollapsed={isSidebarCollapsed}
         toggleSidebar={toggleSidebar}
+        isSidebarOpen={isSidebarOpen} // Pass state to Sidebar
+        toggleMobileSidebar={toggleMobileSidebar} // Pass function to Sidebar
         theme={theme}
         toggleTheme={toggleTheme}
         activeMenu={activeMenu}
@@ -116,8 +124,11 @@ function App() {
       />
       <div className={`flex-grow-1 p-3 ${isSidebarCollapsed ? 'ms-70px' : 'ms-280px'}`}>
         <div className="d-flex justify-content-between align-items-center mb-3">
+          <button className="btn btn-primary d-md-none" onClick={toggleMobileSidebar}>
+            ☰
+          </button>
           <h1>{activeMenu}</h1>
-          <div className="d-flex">
+          <div className="d-none d-md-flex">
             <button className="btn btn-success me-2" onClick={() => handleMenuClick('Produk')}>Tambah Produk</button>
             <button className="btn btn-primary me-2" onClick={() => handleMenuClick('Tambah Transaksi')}>Tambah Transaksi</button>
             <button className="btn btn-warning me-2" onClick={() => handleMenuClick('Pengeluaran')}>Catat Pengeluaran</button>

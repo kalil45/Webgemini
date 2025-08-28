@@ -1,23 +1,36 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Dependencies
 /node_modules
-/.pnp
-.pnp.js
+/backend/node_modules
 
-# testing
-/coverage
-
-# production
+# Build artifacts
 /build
+/backend/build
 
-# misc
-.DS_Store
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# IDE files
+.idea
+.vscode
+
+# SQLite database
+*.db
+*.db-journal
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Vercel output
+.vercel

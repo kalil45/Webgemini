@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from './apiConfig';
 import EditTransactionModal from './EditTransactionModal'; // Import the modal component
 
 function TransactionHistory({ showToast }) {
@@ -17,7 +18,7 @@ function TransactionHistory({ showToast }) {
 
   const fetchTransactions = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/transactions');
+      const response = await fetch(`${API_BASE_URL}/api/transactions`);
       if (response.ok) {
         const data = await response.json();
         setTransactions(data);
@@ -29,10 +30,28 @@ function TransactionHistory({ showToast }) {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
   const handleDelete = async (transactionId) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus transaksi ini? Stok produk akan dikembalikan.')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/transactions/${transactionId}`, {
           method: 'DELETE',
         });
 
@@ -81,7 +100,7 @@ function TransactionHistory({ showToast }) {
   };
 
   const filteredTransactions = transactions.filter((transaction) => {
-    const matchesSearch = transaction.productName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (transaction.productname || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = filterDate ? transaction.date === filterDate : true;
     return matchesSearch && matchesDate;
   });
@@ -142,13 +161,13 @@ function TransactionHistory({ showToast }) {
                 {currentTransactions.length > 0 ? (
                     currentTransactions.map((transaction) => (
                       <tr key={transaction.id}>
-                        <td>{transaction.productName}</td>
+                        <td>{transaction.productname}</td>
                         <td>{transaction.quantity}</td>
-                        <td>Rp {transaction.costPrice.toLocaleString('id-ID')}</td>
-                        <td>Rp {transaction.sellingPrice.toLocaleString('id-ID')}</td>
-                        <td>Rp {transaction.profitPerUnit.toLocaleString('id-ID')}</td>
-                        <td>Rp {transaction.total.toLocaleString('id-ID')}</td>
-                        <td>{transaction.date}</td>
+                                                <td>{formatCurrency(transaction.costprice !== null && transaction.costprice !== undefined ? parseFloat(transaction.costprice) : 0)}</td>
+                        <td>{formatCurrency(transaction.sellingprice || 0)}</td>
+                        <td>{formatCurrency(transaction.profitperunit || 0)}</td>
+                        <td>{formatCurrency(transaction.total || 0)}</td>
+                        <td>{formatDate(transaction.date)}</td>
                         <td>
                           <button className="btn btn-sm btn-info me-2" onClick={() => handleOpenEditModal(transaction)}>Edit</button>
                           <button className="btn btn-sm btn-danger" onClick={() => handleDelete(transaction.id)}>Hapus</button>

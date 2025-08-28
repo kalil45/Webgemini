@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './apiConfig';
 import AddExpenseForm from './AddExpenseForm';
 import EditExpenseModal from './EditExpenseModal'; // Import the modal
 
@@ -13,7 +14,7 @@ function ExpenseContent({ showToast, refreshDashboardData }) {
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/expenses');
+      const response = await fetch(`${API_BASE_URL}/api/expenses`);
       if (response.ok) {
         const data = await response.json();
         setExpenses(data);
@@ -25,10 +26,28 @@ function ExpenseContent({ showToast, refreshDashboardData }) {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const handleDelete = async (expenseId) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus pengeluaran ini? Modal akan dikembalikan.')) {
       try {
-        const response = await fetch(`http://localhost:5000/api/expenses/${expenseId}`, {
+        const response = await fetch(`${API_BASE_URL}/api/expenses/${expenseId}`, {
           method: 'DELETE',
         });
 
@@ -86,8 +105,8 @@ function ExpenseContent({ showToast, refreshDashboardData }) {
                   <tr key={expense.id}>
                     <td>{expense.id}</td>
                     <td>{expense.description}</td>
-                    <td>Rp {expense.amount.toLocaleString('id-ID')}</td>
-                    <td>{expense.date}</td>
+                    <td>{formatCurrency(expense.amount)}</td>
+                    <td>{formatDate(expense.date)}</td>
                     <td>
                       <button className="btn btn-sm btn-info me-2" onClick={() => handleOpenEditModal(expense)}>Edit</button>
                       <button className="btn btn-sm btn-danger" onClick={() => handleDelete(expense.id)}>Hapus</button>

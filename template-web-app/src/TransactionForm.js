@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from './apiConfig';
 import Receipt from './Receipt'; // Import the Receipt component
 
 // Helper functions for currency formatting
@@ -23,7 +24,7 @@ function TransactionForm({ showToast, onTransactionAdded }) {
   const [formData, setFormData] = useState({
     productName: '',
     quantity: '',
-    costPrice: '',
+    costprice: '',
     sellingPrice: '',
   });
 
@@ -58,7 +59,7 @@ function TransactionForm({ showToast, onTransactionAdded }) {
         setFormData({
           productName: '',
           quantity: '',
-          costPrice: '',
+          costprice: '',
           sellingPrice: '',
         });
         setErrors({});
@@ -96,11 +97,10 @@ function TransactionForm({ showToast, onTransactionAdded }) {
   const handleSearchChange = async (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setFormData({ ...formData, productName: query });
 
     if (query.length > 2) {
       try {
-        const response = await fetch(`http://localhost:5000/api/products?search=${query}`);
+        const response = await fetch(`${API_BASE_URL}/api/products?search=${query}`);
         if (response.ok) {
           const data = await response.json();
           setSearchResults(data);
@@ -123,18 +123,33 @@ function TransactionForm({ showToast, onTransactionAdded }) {
     setFormData({
       ...formData,
       productName: product.name,
-      costPrice: product.costPrice,
-      sellingPrice: product.price,
+      costprice: product.costprice || '',
+      sellingPrice: product.price || '',
     });
   };
 
   const validate = () => {
     let tempErrors = {};
+    if (!selectedProduct) {
+      tempErrors.productName = true; // Mark product name as invalid
+      showToast('Mohon pilih produk dari daftar yang tersedia. ⚠️', 'error');
+      setErrors(tempErrors);
+      return false;
+    }
+
     if (!formData.productName) tempErrors.productName = true;
     if (!formData.quantity) tempErrors.quantity = true;
-    if (!formData.costPrice) tempErrors.costPrice = true;
+    if (!formData.costprice) tempErrors.costprice = true;
     if (!formData.sellingPrice) tempErrors.sellingPrice = true;
     if (uangCash === '' || parseFloat(uangCash) < totalTransaksi) tempErrors.uangCash = true;
+
+    if (selectedProduct && selectedProduct.stock < parseInt(formData.quantity, 10)) {
+      tempErrors.quantity = true; // Mark as invalid
+      showToast(`Stok tidak mencukupi. Stok tersedia: ${selectedProduct.stock} ⚠️`, 'error');
+      setErrors(tempErrors);
+      return false; // Explicitly return false
+    }
+
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
@@ -145,13 +160,16 @@ function TransactionForm({ showToast, onTransactionAdded }) {
       setLoading(true);
       try {
         const transactionPayload = {
-          ...formData,
-          costPrice: parseFloat(formData.costPrice),
-          sellingPrice: parseFloat(formData.sellingPrice),
+          productId: selectedProduct ? selectedProduct.id : null,
+          productName: formData.productName,
+          quantity: parseInt(formData.quantity, 10) || 0,
+          costPrice: parseFloat(formData.costprice) || 0,
+          sellingPrice: parseFloat(formData.sellingPrice) || 0,
           total: totalTransaksi,
         };
+        console.log('Sending transaction payload:', transactionPayload);
 
-        const response = await fetch('http://localhost:5000/api/transactions', {
+        const response = await fetch(`${API_BASE_URL}/api/transactions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -187,18 +205,18 @@ function TransactionForm({ showToast, onTransactionAdded }) {
 
   return (
     <div>
-      <div className="transaction-form-container">
-        <div className="card shadow-sm mb-4">
-        <div className="card-header">
+      <div class="transaction-form-container">
+        <div class="card shadow-sm mb-4">
+        <div class="card-header">
           Entri Transaksi Baru
         </div>
-        <div className="card-body">
+        <div class="card-body">
           <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-            <label htmlFor="productName" className="form-label">Nama Produk</label>
+            <div class="mb-3">
+            <label htmlFor="productName" class="form-label">Nama Produk</label>
             <input
               type="text"
-              className={`form-control ${errors.productName ? 'is-invalid' : ''}`}
+              class={`form-control ${errors.productName ? 'is-invalid' : ''}`}
               id="productName"
               name="productName"
               value={searchQuery}
@@ -206,13 +224,13 @@ function TransactionForm({ showToast, onTransactionAdded }) {
               disabled={loading}
               autoComplete="off"
             />
-            {errors.productName && <div className="invalid-feedback">Nama Produk tidak boleh kosong.</div>}
+            {errors.productName && <div class="invalid-feedback">Nama Produk tidak boleh kosong.</div>}
             {searchResults.length > 0 && (
-              <ul className="list-group mt-2">
+              <ul class="list-group mt-2">
                 {searchResults.map((product) => (
                   <li
                     key={product.id}
-                    className="list-group-item list-group-item-action"
+                    class="list-group-item list-group-item-action"
                     onClick={() => handleProductSelect(product)}
                     style={{ cursor: 'pointer' }}
                   >
@@ -222,68 +240,68 @@ function TransactionForm({ showToast, onTransactionAdded }) {
               </ul>
             )}
           </div>
-          <div className="mb-3">
-            <label htmlFor="quantity" className="form-label">Jumlah</label>
+          <div class="mb-3">
+            <label htmlFor="quantity" class="form-label">Jumlah</label>
             <input
               type="number"
-              className={`form-control ${errors.quantity ? 'is-invalid' : ''}`}
+              class={`form-control ${errors.quantity ? 'is-invalid' : ''}`}
               id="quantity"
               name="quantity"
               value={formData.quantity}
               onChange={handleChange}
               disabled={loading}
             />
-            {errors.quantity && <div className="invalid-feedback">Jumlah tidak boleh kosong.</div>}
+            {errors.quantity && <div class="invalid-feedback">Jumlah tidak boleh kosong.</div>}
           </div>
-          <div className="mb-3">
-            <label htmlFor="costPrice" className="form-label">Harga Modal</label>
-            <div className="input-group">
-              <span className="input-group-text">Rp</span>
+          <div class="mb-3">
+            <label htmlFor="costPrice" class="form-label">Harga Modal</label>
+            <div class="input-group">
+              <span class="input-group-text">Rp </span>
               <input
                 type="text"
-                className={`form-control ${errors.costPrice ? 'is-invalid' : ''}`}
+                class={`form-control ${errors.costprice ? 'is-invalid' : ''}`}
                 id="costPrice"
-                name="costPrice"
-                value={formatRupiah(formData.costPrice)}
+                name="costprice"
+                value={formatRupiah(formData.costprice)}
                 onChange={handleCurrencyChange}
-                disabled={loading || selectedProduct}
+                disabled={loading}
               />
             </div>
-            {errors.costPrice && <div className="invalid-feedback d-block">Harga Modal tidak boleh kosong.</div>}
+            {errors.costprice && <div class="invalid-feedback d-block">Harga Modal tidak boleh kosong.</div>}
           </div>
-          <div className="mb-3">
-            <label htmlFor="sellingPrice" className="form-label">Harga Jual</label>
-            <div className="input-group">
-              <span className="input-group-text">Rp</span>
+          <div class="mb-3">
+            <label htmlFor="sellingPrice" class="form-label">Harga Jual</label>
+            <div class="input-group">
+              <span class="input-group-text">Rp </span>
               <input
                 type="text"
-                className={`form-control ${errors.sellingPrice ? 'is-invalid' : ''}`}
+                class={`form-control ${errors.sellingPrice ? 'is-invalid' : ''}`}
                 id="sellingPrice"
                 name="sellingPrice"
                 value={formatRupiah(formData.sellingPrice)}
                 onChange={handleCurrencyChange}
-                disabled={loading || selectedProduct}
+                disabled={loading}
               />
             </div>
-            {errors.sellingPrice && <div className="invalid-feedback d-block">Harga Jual tidak boleh kosong.</div>}
+            {errors.sellingPrice && <div class="invalid-feedback d-block">Harga Jual tidak boleh kosong.</div>}
           </div>
-          <div className="mb-3">
-            <label htmlFor="totalTransaksi" className="form-label">Total Transaksi</label>
+          <div class="mb-3">
+            <label htmlFor="totalTransaksi" class="form-label">Total Transaksi</label>
             <input
               type="text"
-              className="form-control"
+              class="form-control"
               id="totalTransaksi"
-              value={`Rp ${totalTransaksi.toLocaleString('id-ID')}`}
+              value={`${totalTransaksi.toLocaleString('id-ID')}`}
               disabled
             />
           </div>
-          <div className="mb-3">
-            <label htmlFor="uangCash" className="form-label">Uang Cash</label>
-            <div className="input-group">
-              <span className="input-group-text">Rp</span>
+          <div class="mb-3">
+            <label htmlFor="uangCash" class="form-label">Uang Cash</label>
+            <div class="input-group">
+              <span class="input-group-text">Rp </span>
               <input
                 type="text"
-                className={`form-control ${errors.uangCash ? 'is-invalid' : ''}`}
+                class={`form-control ${errors.uangCash ? 'is-invalid' : ''}`}
                 id="uangCash"
                 name="uangCash"
                 value={formatRupiah(uangCash)}
@@ -291,21 +309,21 @@ function TransactionForm({ showToast, onTransactionAdded }) {
                 disabled={loading}
               />
             </div>
-            {errors.uangCash && <div className="invalid-feedback d-block">Uang Cash tidak boleh kosong dan harus cukup.</div>}
+            {errors.uangCash && <div class="invalid-feedback d-block">Uang Cash tidak boleh kosong dan harus cukup.</div>}
           </div>
-          <div className="mb-3">
-            <label htmlFor="uangKembali" className="form-label">Uang Kembali</label>
+          <div class="mb-3">
+            <label htmlFor="uangKembali" class="form-label">Uang Kembali</label>
             <input
               type="text"
-              className="form-control"
+              class="form-control"
               id="uangKembali"
-              value={`Rp ${uangKembali.toLocaleString('id-ID')}`}
+              value={`${uangKembali.toLocaleString('id-ID')}`}
               disabled
             />
           </div>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button type="submit" class="btn btn-primary" disabled={loading}>
               {loading ? (
-                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               ) : (
                 'Catat Transaksi & Cetak'
               )}
@@ -314,7 +332,7 @@ function TransactionForm({ showToast, onTransactionAdded }) {
         </div>
       </div>
       </div>
-      <div className="receipt-container">
+      <div class="receipt-container">
         {transactionToPrint && (
           <Receipt
             ref={receiptRef}

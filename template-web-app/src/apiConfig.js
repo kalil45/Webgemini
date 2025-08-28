@@ -1,0 +1,1 @@
+export const API_BASE_URL = 'https://backend-rd8y4lmrj-khalil-finandas-projects.vercel.app';

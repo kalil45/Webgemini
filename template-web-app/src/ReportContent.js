@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { API_BASE_URL } from './apiConfig';
 
 function ReportContent() {
   const [transactions, setTransactions] = useState([]);
@@ -19,8 +20,8 @@ function ReportContent() {
 
   const fetchReportData = useCallback(async () => {
     const { start, end } = dateRange;
-    const transactionUrl = `http://localhost:5000/api/transactions?startDate=${start}&endDate=${end}`;
-    const expenseUrl = `http://localhost:5000/api/expenses?startDate=${start}&endDate=${end}`;
+    const transactionUrl = `${API_BASE_URL}/api/transactions?startDate=${start}&endDate=${end}`;
+    const expenseUrl = `${API_BASE_URL}/api/expenses?startDate=${start}&endDate=${end}`;
 
     try {
       const [transactionResponse, expenseResponse] = await Promise.all([
@@ -51,9 +52,9 @@ function ReportContent() {
   }, [fetchReportData]);
 
   const calculateSummary = (transactionsData, expensesData) => {
-    const totalSales = transactionsData.reduce((acc, t) => acc + t.total, 0);
-    const grossProfit = transactionsData.reduce((acc, t) => acc + (t.profitPerUnit * t.quantity), 0);
-    const totalExpenses = expensesData.reduce((acc, e) => acc + e.amount, 0);
+    const totalSales = transactionsData.reduce((acc, t) => acc + parseFloat(t.total || 0), 0);
+    const grossProfit = transactionsData.reduce((acc, t) => acc + (parseFloat(t.profitperunit || 0) * parseFloat(t.quantity || 0)), 0);
+    const totalExpenses = expensesData.reduce((acc, e) => acc + parseFloat(e.amount || 0), 0);
     const netProfit = grossProfit - totalExpenses;
 
     setSummary({ totalSales, grossProfit, totalExpenses, netProfit });
@@ -77,6 +78,24 @@ function ReportContent() {
       printWindow.print();
       printWindow.close();
     }, 250);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   return (
@@ -114,7 +133,7 @@ function ReportContent() {
               <div className="card bg-primary text-white h-100">
                 <div className="card-body">
                   <h5 className="card-title">Total Penjualan</h5>
-                  <p className="card-text fs-4">Rp {summary.totalSales.toLocaleString('id-ID')}</p>
+                  <p className="card-text fs-4">{(summary.totalSales || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
             </div>
@@ -122,7 +141,7 @@ function ReportContent() {
               <div className="card bg-info text-white h-100">
                 <div className="card-body">
                   <h5 className="card-title">Laba Kotor</h5>
-                  <p className="card-text fs-4">Rp {summary.grossProfit.toLocaleString('id-ID')}</p>
+                  <p className="card-text fs-4">{(summary.grossProfit || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
             </div>
@@ -130,7 +149,7 @@ function ReportContent() {
               <div className="card bg-warning text-dark h-100">
                 <div className="card-body">
                   <h5 className="card-title">Total Pengeluaran</h5>
-                  <p className="card-text fs-4">Rp {summary.totalExpenses.toLocaleString('id-ID')}</p>
+                  <p className="card-text fs-4">{(summary.totalExpenses || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
             </div>
@@ -138,7 +157,7 @@ function ReportContent() {
               <div className="card bg-success text-white h-100">
                 <div className="card-body">
                   <h5 className="card-title">Laba Bersih</h5>
-                  <p className="card-text fs-4">Rp {summary.netProfit.toLocaleString('id-ID')}</p>
+                  <p className="card-text fs-4">{(summary.netProfit || 0).toLocaleString('id-ID')}</p>
                 </div>
               </div>
             </div>
@@ -169,12 +188,12 @@ function ReportContent() {
                 {transactions.length > 0 ? (
                   transactions.map(t => (
                     <tr key={t.id}>
-                      <td>{t.productName}</td>
+                      <td>{t.productname}</td>
                       <td>{t.quantity}</td>
-                      <td>Rp {t.sellingPrice.toLocaleString('id-ID')}</td>
-                      <td>Rp {t.total.toLocaleString('id-ID')}</td>
-                      <td>Rp {(t.profitPerUnit * t.quantity).toLocaleString('id-ID')}</td>
-                      <td>{t.date}</td>
+                      <td>{formatCurrency(parseFloat(t.sellingprice) || 0)}</td>
+                      <td>{formatCurrency(parseFloat(t.total) || 0)}</td>
+                      <td>{formatCurrency((parseFloat(t.profitperunit) || 0) * (parseFloat(t.quantity) || 0))}</td>
+                      <td>{formatDate(t.date)}</td>
                     </tr>
                   ))
                 ) : (
@@ -207,8 +226,8 @@ function ReportContent() {
                   expenses.map(e => (
                     <tr key={e.id}>
                       <td>{e.description}</td>
-                      <td>Rp {e.amount.toLocaleString('id-ID')}</td>
-                      <td>{e.date}</td>
+                      <td>{formatCurrency(parseFloat(e.amount) || 0)}</td>
+                      <td>{formatDate(e.date)}</td>
                     </tr>
                   ))
                 ) : (

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { API_BASE_URL } from './apiConfig';
 
 function SalesChart() {
   const [chartData, setChartData] = useState([]);
@@ -10,7 +11,7 @@ function SalesChart() {
 
   const fetchSalesData = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/transactions');
+      const response = await fetch(`${API_BASE_URL}/api/transactions`);
       if (response.ok) {
         const transactions = await response.json();
         const aggregatedData = aggregateSalesByDay(transactions);
@@ -23,12 +24,30 @@ function SalesChart() {
     }
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   const aggregateSalesByDay = (transactions) => {
     const salesMap = new Map();
 
     transactions.forEach(transaction => {
       const date = transaction.date; // Assuming date is in YYYY-MM-DD format
-      const total = transaction.total;
+      const total = parseFloat(transaction.total || 0);
 
       if (salesMap.has(date)) {
         salesMap.set(date, salesMap.get(date) + total);
@@ -39,7 +58,7 @@ function SalesChart() {
 
     // Sort by date and format for recharts
     const sortedDates = Array.from(salesMap.keys()).sort();
-    return sortedDates.map(date => ({ name: date, penjualan: salesMap.get(date) }));
+    return sortedDates.map(date => ({ name: formatDate(date), penjualan: salesMap.get(date) }));
   };
 
   return (
@@ -60,8 +79,8 @@ function SalesChart() {
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis tickFormatter={(value) => `${value.toLocaleString('id-ID')}`} />
-            <Tooltip formatter={(value) => `Rp ${value.toLocaleString('id-ID')}`} />
+            <YAxis tickFormatter={(value) => formatCurrency(value)} />
+            <Tooltip formatter={(value) => formatCurrency(value)} />
             <Legend />
             <Line type="monotone" dataKey="penjualan" stroke="#8884d8" activeDot={{ r: 8 }} />
           </LineChart>

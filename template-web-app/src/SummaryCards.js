@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from './apiConfig';
 
 function SummaryCards({ showToast }) {
   const [totalSalesToday, setTotalSalesToday] = useState(0);
@@ -13,7 +14,7 @@ function SummaryCards({ showToast }) {
 
   const fetchAndCalculateSummary = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/transactions');
+      const response = await fetch(`${API_BASE_URL}/api/transactions`);
       if (response.ok) {
         const transactions = await response.json();
         calculateSummary(transactions);
@@ -27,10 +28,10 @@ function SummaryCards({ showToast }) {
 
   const fetchTotalCapital = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/capital/total');
+      const response = await fetch(`${API_BASE_URL}/api/capital/total`);
       if (response.ok) {
         const data = await response.json();
-        setRemainingCapital(data.totalCapital);
+        setRemainingCapital(parseFloat(data.totalCapital || 0));
       } else {
         showToast('Gagal mengambil data modal.', 'error');
       }
@@ -47,8 +48,8 @@ function SummaryCards({ showToast }) {
 
     transactions.forEach(transaction => {
       if (transaction.date === today) {
-        sales += transaction.total;
-        profit += transaction.profitPerUnit * transaction.quantity;
+        sales += parseFloat(transaction.total || 0);
+        profit += parseFloat(transaction.profitPerUnit || 0) * parseFloat(transaction.quantity || 0);
         productsSold += transaction.quantity;
       }
     });
@@ -62,13 +63,13 @@ function SummaryCards({ showToast }) {
     {
       icon: '💰',
       title: 'Total Penjualan Hari Ini',
-      value: `Rp ${totalSalesToday.toLocaleString('id-ID')}`,
+      value: `${totalSalesToday.toLocaleString('id-ID')}`,
       color: 'primary',
     },
     {
       icon: '📈',
       title: 'Total Laba Hari Ini',
-      value: `Rp ${totalProfitToday.toLocaleString('id-ID')}`,
+      value: `${totalProfitToday.toLocaleString('id-ID')}`,
       color: 'success',
     },
     {
@@ -80,7 +81,7 @@ function SummaryCards({ showToast }) {
     {
       icon: '💳',
       title: 'Modal Tersisa',
-      value: `Rp ${remainingCapital.toLocaleString('id-ID')}`,
+      value: `${remainingCapital.toLocaleString('id-ID')}`,
       color: 'info',
     },
   ];
