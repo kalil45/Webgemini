@@ -159,6 +159,7 @@ function TransactionHistory({ showToast }) {
 
   return (
     <>
+      <h1>TEST</h1>
       {/* 6. Hidden div for printing individual receipts */}
       <div className="receipt-container">
         {transactionToPrint && (
