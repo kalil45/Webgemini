@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from './apiConfig';
-import EditTransactionModal from './EditTransactionModal'; // Import the modal component
+import EditTransactionModal from './EditTransactionModal';
+import Receipt from './Receipt'; // 1. Import Receipt component
 
 function TransactionHistory({ showToast }) {
   const [transactions, setTransactions] = useState([]);
@@ -9,8 +10,24 @@ function TransactionHistory({ showToast }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
+  
+  // 2. Add state for printing
+  const [transactionToPrint, setTransactionToPrint] = useState(null);
+  
   const transactionsPerPage = 5;
   const tableRef = useRef(null);
+  const receiptRef = useRef(null); // Ref for the receipt component
+
+  // 3. useEffect to trigger print
+  useEffect(() => {
+    if (transactionToPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+        setTransactionToPrint(null); // Reset after printing
+      }, 100); // Delay to allow component to render
+      return () => clearTimeout(timer);
+    }
+  }, [transactionToPrint]);
 
   useEffect(() => {
     fetchTransactions();
@@ -40,13 +57,13 @@ function TransactionHistory({ showToast }) {
   };
 
   const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   const handleDelete = async (transactionId) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus transaksi ini? Stok produk akan dikembalikan.')) {
@@ -83,7 +100,24 @@ function TransactionHistory({ showToast }) {
     handleCloseEditModal();
   };
 
-  const handlePrint = () => {
+  // 4. Function to handle individual receipt printing
+  const handlePrintReceipt = (transaction) => {
+    // The Receipt component expects specific prop names. Let's map them.
+    const receiptData = {
+      transaction: {
+        ...transaction,
+        productName: transaction.productname,
+        sellingPrice: transaction.sellingprice,
+        costPrice: transaction.costprice,
+        profitPerUnit: transaction.profitperunit,
+      },
+      uangCash: transaction.total, // Placeholder, assuming exact payment
+      uangKembali: 0,
+    };
+    setTransactionToPrint(receiptData);
+  };
+
+  const handlePrintTable = () => {
     const printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.write('<html><head><title>Cetak Riwayat Transaksi</title>');
     printWindow.document.write('<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">');
@@ -116,12 +150,30 @@ function TransactionHistory({ showToast }) {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+  // 5. Placeholder for business details
+  const businessDetails = {
+    name: "Toko Anda",
+    address: "Jalan Contoh No. 123",
+    phone: "081234567890",
+  };
+
   return (
     <>
+      {/* 6. Hidden div for printing individual receipts */}
+      <div className="receipt-container">
+        {transactionToPrint && (
+          <Receipt
+            ref={receiptRef}
+            transactionData={transactionToPrint}
+            businessDetails={businessDetails}
+          />
+        )}
+      </div>
+
       <div className="card shadow-sm mb-4">
         <div className="card-header d-flex justify-content-between align-items-center">
           Riwayat Transaksi
-          <button className="btn btn-sm btn-outline-secondary" onClick={handlePrint}>🖨️ Cetak</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={handlePrintTable}>🖨️ Cetak Tabel</button>
         </div>
         <div className="card-body">
           <div className="row mb-3">
@@ -159,26 +211,28 @@ function TransactionHistory({ showToast }) {
               </thead>
               <tbody>
                 {currentTransactions.length > 0 ? (
-                    currentTransactions.map((transaction) => (
-                      <tr key={transaction.id}>
-                        <td>{transaction.productname}</td>
-                        <td>{transaction.quantity}</td>
-                                                <td>{formatCurrency(transaction.costprice !== null && transaction.costprice !== undefined ? parseFloat(transaction.costprice) : 0)}</td>
-                        <td>{formatCurrency(transaction.sellingprice || 0)}</td>
-                        <td>{formatCurrency(transaction.profitperunit || 0)}</td>
-                        <td>{formatCurrency(transaction.total || 0)}</td>
-                        <td>{formatDate(transaction.date)}</td>
-                        <td>
-                          <button className="btn btn-sm btn-info me-2" onClick={() => handleOpenEditModal(transaction)}>Edit</button>
-                          <button className="btn btn-sm btn-danger" onClick={() => handleDelete(transaction.id)}>Hapus</button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="8" className="text-center">Tidak ada transaksi ditemukan.</td>
+                  currentTransactions.map((transaction) => (
+                    <tr key={transaction.id}>
+                      <td>{transaction.productname}</td>
+                      <td>{transaction.quantity}</td>
+                      <td>{formatCurrency(transaction.costprice !== null && transaction.costprice !== undefined ? parseFloat(transaction.costprice) : 0)}</td>
+                      <td>{formatCurrency(transaction.sellingprice || 0)}</td>
+                      <td>{formatCurrency(transaction.profitperunit || 0)}</td>
+                      <td>{formatCurrency(transaction.total || 0)}</td>
+                      <td>{formatDate(transaction.date)}</td>
+                      <td>
+                        {/* 7. Add the new Print button */}
+                        <button className="btn btn-sm btn-success me-2" onClick={() => handlePrintReceipt(transaction)}>Print</button>
+                        <button className="btn btn-sm btn-info me-2" onClick={() => handleOpenEditModal(transaction)}>Edit</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(transaction.id)}>Hapus</button>
+                      </td>
                     </tr>
-                  )}
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="8" className="text-center">Tidak ada transaksi ditemukan.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
